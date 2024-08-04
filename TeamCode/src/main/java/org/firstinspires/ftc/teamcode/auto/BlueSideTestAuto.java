@@ -3,9 +3,13 @@
 
 package org.firstinspires.ftc.teamcode.auto;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -20,15 +24,18 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.auto.vision.AprilTagUtils;
 import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 @Config
 @Autonomous(name = "RR_BLUE_TEST_AUTO", group = "Autonomous")
 public class BlueSideTestAuto extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
-    private VisionPortal visionPortal;
 
     @Override
     public void runOpMode() {
@@ -78,44 +85,43 @@ public class BlueSideTestAuto extends LinearOpMode {
                 .strafeTo(new Vector2d(48, 12))
                 .build();
 
-        //**TODO Initialize AprilTag recognition.
+        initAprilTag();
 
         telemetry.addLine("Waiting for start ...");
         telemetry.update();
 
         waitForStart();
 
-       // vision here that outputs position
-        //**TODO Use enum for LEFT, CENTER, RIGHT
-        //**TODO Use AprilTag enum
-       int visionOutputPosition = 2; // center spike
+        // Assume that the following AprilTag id number comes from the vision system.
+        AprilTagUtils.AprilTagId targetTagId = AprilTagUtils.AprilTagId.TAG_ID_2;
         Action trajectoryActionChosen;
-        switch (visionOutputPosition) {
-            case 1: {
+        switch (targetTagId) {
+            case TAG_ID_1: {
                 trajectoryActionChosen = trajectoryAction1;
                 break;
             }
-            case 2: {
+            case TAG_ID_2: {
                 trajectoryActionChosen = trajectoryAction2;
                 break;
             }
-            case 3: {
+            case TAG_ID_3: {
                 trajectoryActionChosen = trajectoryAction3;
                 break;
             }
             default: {
-                telemetry.addData("Invalid vision position", visionOutputPosition);
+                telemetry.addData("Invalid blue backdrop AprilTag target", targetTagId);
                 telemetry.update();
                 return;
             }
         }
 
+        // Action for AprilTag detection.
+        BackdropAprilTagDetection detection = new BackdropAprilTagDetection(targetTagId);
+
         Actions.runBlocking(
                 new SequentialAction(
                         trajectoryActionChosen,
-                        //**TODO Need Action that gets the distance and angle to
-                        // the AprilTag as well as its field coordinates.
-                        // Telemetry and log.
+                        detection,
                         trajectoryActionCloseOut
                 )
         );
@@ -124,27 +130,31 @@ public class BlueSideTestAuto extends LinearOpMode {
     private void initAprilTag() {
 
         // Create the AprilTag processor.
-        //##PY in the sample all are commented out ...
         aprilTag = new AprilTagProcessor.Builder()
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
                 .setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 //##PY .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
                 .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
 
                 // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
+                // If you do not manually specify calibration parameters,
+                // the SDK will attempt to load a predefined calibration
+                // for your camera.
                 // ... these parameters are fx, fy, cx, cy.
-                // ##PY for Logitech Brio from the 3DF Zephyr tool
-                //.setLensIntrinsics(627.419488832, 627.419488832, 301.424062225, 234.042415697)
+
                 //#PY for Logitech C920 from the FTC file teamwebcamcalibrations.xml
                 //.setLensIntrinsics(622.001, 622.001, 319.803, 241.251)
+
                 //##PY for Arducam 120fps Mono Global Shutter USB Camera, 720P OV9281 UVC Webcam Module
                 //.setLensIntrinsics(539.024, 539.024, 316.450, 236.365)
+
+                //**TODO For LCHS use the calibration for the Logitecth C270 from the
+                // FTC file teamwebcamcalibrations.xml
+                //.setLensIntrinsics(822.317, 822.317, 319.495, 242.502)
+
                 //##PY for Logitech C920 from the 3DF Zephyr tool
                 .setLensIntrinsics(625.838, 625.838, 323.437, 240.373)
+
                 .build();
 
         // Create the vision portal by using a builder.
@@ -174,8 +184,10 @@ public class BlueSideTestAuto extends LinearOpMode {
         builder.enableLiveView(false); //##PY - added
 
         // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
+        VisionPortal visionPortal = builder.build();
 
+        telemetry.addLine("Waiting for webcam to start streaming");
+        telemetry.update();
         RobotLog.d("ConceptAprilTag", "Waiting for webcam to start streaming");
         ElapsedTime streamingTimer = new ElapsedTime();
         streamingTimer.reset(); // start
@@ -187,8 +199,50 @@ public class BlueSideTestAuto extends LinearOpMode {
         if (cameraState != VisionPortal.CameraState.STREAMING) {
             throw new RuntimeException("Timed out waiting for webcam streaming to start");
         }
-
-        // Start with the processor disabled.
-        visionPortal.setProcessorEnabled(aprilTag, false);
     }   // end method initAprilTag()
+
+    private class BackdropAprilTagDetection implements Action {
+
+        private final int targetTagId;
+
+        public BackdropAprilTagDetection(AprilTagUtils.AprilTagId pTargetTagId) {
+            targetTagId = pTargetTagId.getNumericId();
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+
+            // Step through the list of detected tags and look for a matching tag.
+            List<AprilTagDetection> currentDetections = aprilTag.getFreshDetections();
+            AprilTagDetection targetDetection = null;
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null && detection.id == targetTagId) {
+                    targetDetection = detection;
+                    break; // don't look any further.
+                }
+            }
+
+            telemetryAprilTag(targetDetection);
+            return false; // only run once
+        }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void telemetryAprilTag(AprilTagDetection pDetection) {
+        if (pDetection != null) {
+            telemetry.addLine(String.format("\n==== (ID %d) %s", pDetection.id, pDetection.metadata.name));
+            telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", pDetection.ftcPose.x, pDetection.ftcPose.y, pDetection.ftcPose.z));
+            telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", pDetection.ftcPose.pitch, pDetection.ftcPose.roll, pDetection.ftcPose.yaw));
+            telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", pDetection.ftcPose.range, pDetection.ftcPose.bearing, pDetection.ftcPose.elevation));
+        } else {
+            telemetry.addLine("Requested AprilTag was not detected");
+        }
+
+        // Add "key" information to telemetry
+        telemetry.addLine("\nkey:\nXYZ = X (Right), Y (Forward), Z (Up) dist.");
+        telemetry.addLine("PRY = Pitch, Roll & Yaw (XYZ Rotation)");
+        telemetry.addLine("RBE = Range, Bearing & Elevation");
+        telemetry.update();
+
+    }   // end method telemetryAprilTag()
 }
