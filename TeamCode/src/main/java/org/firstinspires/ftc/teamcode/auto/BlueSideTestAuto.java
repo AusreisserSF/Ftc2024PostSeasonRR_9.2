@@ -65,12 +65,12 @@ public class BlueSideTestAuto extends LinearOpMode {
                 .build();
 
         trajectoryAction2 = drive.actionBuilder(drive.pose)
-                .lineToY(37)
+                .lineToY(35)
                 .setTangent(Math.toRadians(0))
-                .lineToX(18)
-                .waitSeconds(3)
+                .lineToX(16)
+                .waitSeconds(2)
                 .setTangent(Math.toRadians(0))
-                .lineToXSplineHeading(46, Math.toRadians(180))
+                .lineToXSplineHeading(46, Math.toRadians(0))
                 .waitSeconds(3)
                 .build();
 
@@ -81,13 +81,13 @@ public class BlueSideTestAuto extends LinearOpMode {
                 .waitSeconds(3)
                 .build();
 
-        trajectoryActionCloseOut = drive.actionBuilder(drive.pose)
+       trajectoryActionCloseOut = drive.actionBuilder(drive.pose)
                 .strafeTo(new Vector2d(48, 12))
                 .build();
 
         initAprilTag();
 
-        telemetry.addLine("Waiting for start ...");
+        telemetry.addLine("Waiting for start at BLUE_A4 ...");
         telemetry.update();
 
         waitForStart();
@@ -115,16 +115,18 @@ public class BlueSideTestAuto extends LinearOpMode {
             }
         }
 
-        // Action for AprilTag detection.
-        BackdropAprilTagDetection detection = new BackdropAprilTagDetection(targetTagId);
-
+        //**TODO This SequentialAction should work.
         Actions.runBlocking(
                 new SequentialAction(
                         trajectoryActionChosen,
-                        detection,
+                        new BackdropAprilTagDetection(targetTagId), // Action for AprilTag detection
                         trajectoryActionCloseOut
                 )
         );
+
+        //**TODO The next two lines do work.
+        //Actions.runBlocking(trajectoryActionChosen);
+        //Actions.runBlocking(detection);
     }
 
     private void initAprilTag() {
@@ -212,6 +214,8 @@ public class BlueSideTestAuto extends LinearOpMode {
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
 
+            RobotLog.d("BackdropAprilTagDetection.run() entered");
+
             // Step through the list of detected tags and look for a matching tag.
             List<AprilTagDetection> currentDetections = aprilTag.getFreshDetections();
             AprilTagDetection targetDetection = null;
@@ -221,6 +225,11 @@ public class BlueSideTestAuto extends LinearOpMode {
                     break; // don't look any further.
                 }
             }
+
+            if (targetDetection == null)
+                RobotLog.d("AprilTag not found");
+            else
+                RobotLog.d("AprilTag found " + targetDetection.id);
 
             telemetryAprilTag(targetDetection);
             return false; // only run once

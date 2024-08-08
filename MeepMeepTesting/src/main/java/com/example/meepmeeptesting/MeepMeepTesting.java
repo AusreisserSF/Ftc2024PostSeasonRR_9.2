@@ -15,13 +15,13 @@ public class MeepMeepTesting {
                 .build();
 
         // trajectoryAction2 from BlueSideTestAuto.
-                myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(90)))
-                .lineToY(37)
+                myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(270)))
+                .lineToY(35)
                 .setTangent(Math.toRadians(0))
-                .lineToX(18)
-                .waitSeconds(3)
+                .lineToX(16)
+                .waitSeconds(2)
                 .setTangent(Math.toRadians(0))
-                .lineToXSplineHeading(46, Math.toRadians(180))
+                .lineToXSplineHeading(46, Math.toRadians(0))
                 .waitSeconds(3)
                 .build());
 
@@ -38,7 +38,7 @@ public class MeepMeepTesting {
                 .build());
          */
 
-        meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
+        meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_OFFICIAL)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
