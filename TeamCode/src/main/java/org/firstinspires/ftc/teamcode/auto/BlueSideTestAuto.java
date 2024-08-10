@@ -44,7 +44,7 @@ public class BlueSideTestAuto extends LinearOpMode {
         // If you end up using lineToX(), lineToY(), strafeTo(), splineTo(),
         // or any of their variants in your code, if the initial pose is wrong,
         // all future movements will be thrown off. 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(11.8, 61.7, Math.toRadians(90)));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(11.8, 61.7, Math.toRadians(270)));
 
         Action trajectoryAction1;
         Action trajectoryAction2;
@@ -119,8 +119,8 @@ public class BlueSideTestAuto extends LinearOpMode {
         Actions.runBlocking(
                 new SequentialAction(
                         trajectoryActionChosen,
-                        new BackdropAprilTagDetection(targetTagId), // Action for AprilTag detection
-                        trajectoryActionCloseOut
+                        new BackdropAprilTagDetection(targetTagId) //, // Action for AprilTag detection
+                        //**TODO stop at backdrop for now trajectoryActionCloseOut
                 )
         );
 
@@ -144,18 +144,17 @@ public class BlueSideTestAuto extends LinearOpMode {
                 // for your camera.
                 // ... these parameters are fx, fy, cx, cy.
 
-                //#PY for Logitech C920 from the FTC file teamwebcamcalibrations.xml
-                //.setLensIntrinsics(622.001, 622.001, 319.803, 241.251)
-
                 //##PY for Arducam 120fps Mono Global Shutter USB Camera, 720P OV9281 UVC Webcam Module
                 //.setLensIntrinsics(539.024, 539.024, 316.450, 236.365)
 
-                //**TODO For LCHS use the calibration for the Logitecth C270 from the
+                //**TODO For LCHS use the calibration for the Logitech C270 from the
                 // FTC file teamwebcamcalibrations.xml
-                //.setLensIntrinsics(822.317, 822.317, 319.495, 242.502)
+                .setLensIntrinsics(822.317, 822.317, 319.495, 242.502)
 
+                //**TODO for Logitech C920 from the FTC file teamwebcamcalibrations.xml
+                //.setLensIntrinsics(622.001, 622.001, 319.803, 241.251)
                 //##PY for Logitech C920 from the 3DF Zephyr tool
-                .setLensIntrinsics(625.838, 625.838, 323.437, 240.373)
+                //.setLensIntrinsics(625.838, 625.838, 323.437, 240.373)
 
                 .build();
 
@@ -243,8 +242,16 @@ public class BlueSideTestAuto extends LinearOpMode {
             telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", pDetection.ftcPose.x, pDetection.ftcPose.y, pDetection.ftcPose.z));
             telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", pDetection.ftcPose.pitch, pDetection.ftcPose.roll, pDetection.ftcPose.yaw));
             telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", pDetection.ftcPose.range, pDetection.ftcPose.bearing, pDetection.ftcPose.elevation));
+
+            // Also write to log.
+            RobotLog.d(String.format("\n==== (ID %d) %s", pDetection.id, pDetection.metadata.name));
+            RobotLog.d(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", pDetection.ftcPose.x, pDetection.ftcPose.y, pDetection.ftcPose.z));
+            RobotLog.d(String.format("PRY %6.1f %6.1f %6.1f  (deg)", pDetection.ftcPose.pitch, pDetection.ftcPose.roll, pDetection.ftcPose.yaw));
+            RobotLog.d(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", pDetection.ftcPose.range, pDetection.ftcPose.bearing, pDetection.ftcPose.elevation));
+
         } else {
             telemetry.addLine("Requested AprilTag was not detected");
+            RobotLog.d("Requested AprilTag was not detected");
         }
 
         // Add "key" information to telemetry
