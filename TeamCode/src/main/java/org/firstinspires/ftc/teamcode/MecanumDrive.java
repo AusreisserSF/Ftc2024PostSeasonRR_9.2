@@ -63,13 +63,14 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.UP; //## PY set to UP
 
         // drive model parameters
-        public double inPerTick = 0.002960116; //##PY from ForwardPushTest
-        public double lateralInPerTick = 0.002420631820640798; //##PY from LateralRampLogger
-        public double trackWidthTicks = 4961.619979575391; //##PY from AngularRampLogger
+        public double inPerTick = 0.00294; //##PY from ForwardPushTest
+
+        public double lateralInPerTick = 0.0022059951805046283; // 0.002420631820640798; //##PY from LateralRampLogger
+        public double trackWidthTicks = 5002.8832088259705; // 4961.619979575391; //##PY from AngularRampLogger
 
         // feedforward parameters (in tick units)
-        public double kS = 0.7419135663019945; //##PY from ForwardRampLogger
-        public double kV = 0.0005828189512420316; //##PY from ForwardRampLogger
+        public double kS = 0.6198063044511004; // 0.7419135663019945; //##PY from ForwardRampLogger
+        public double kV = 0.0005928353935888693; // 0.0005828189512420316; //##PY from ForwardRampLogger
         public double kA = 0.0001; //##PY starting point per documentation 0.0000001
 
         // path profile parameters (in inches)
@@ -241,8 +242,8 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick);
-        //##PY was new DriveLocalizer();
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+        //##PY started as DriveLocalizer(); changed to TwoDeadWheelLocalizer; changed to ThreeDeadWheelLocalizer
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
