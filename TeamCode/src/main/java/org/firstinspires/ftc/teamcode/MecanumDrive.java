@@ -242,8 +242,9 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
-        //##PY started as DriveLocalizer(); changed to TwoDeadWheelLocalizer; changed to ThreeDeadWheelLocalizer
+        //##PY started as DriveLocalizer(); changed to TwoDeadWheelLocalizer; changed to ThreeDeadWheelLocalizer;
+        // 8/19/24 changed back to TwoDeadWheelLocalizer for Notre Dame.
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }

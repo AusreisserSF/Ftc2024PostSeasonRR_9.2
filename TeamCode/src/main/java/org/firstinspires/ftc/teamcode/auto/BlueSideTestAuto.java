@@ -85,7 +85,8 @@ public class BlueSideTestAuto extends LinearOpMode {
                 .strafeTo(new Vector2d(48, 12))
                 .build();
 
-        initAprilTag();
+       //##PY Commented out for the basic Notre Dame robot without a camera.
+       //initAprilTag();
 
         telemetry.addLine("Waiting for start at BLUE_A4 ...");
         telemetry.update();
@@ -115,17 +116,18 @@ public class BlueSideTestAuto extends LinearOpMode {
             }
         }
 
-        //**TODO This SequentialAction should work.
-        Actions.runBlocking(
-                new SequentialAction(
-                        trajectoryActionChosen,
-                        new BackdropAprilTagDetection(targetTagId) //, // Action for AprilTag detection
+        //##PY This SequentialAction works. It detects an AprilTag at the end of the run.
+       // Actions.runBlocking(
+       //         new SequentialAction(
+       //                 trajectoryActionChosen,
+       //                 new BackdropAprilTagDetection(targetTagId) //, // Action for AprilTag detection
                         //**TODO stop at backdrop for now trajectoryActionCloseOut
-                )
-        );
+       //         )
+       // );
 
-        //**TODO The next two lines do work.
-        //Actions.runBlocking(trajectoryActionChosen);
+        //##PY The next two lines also work; comment out Actions.runBlocking above.
+        //##PY But for the ND robot without a camera just use the next line.
+        Actions.runBlocking(trajectoryActionChosen);
         //Actions.runBlocking(detection);
     }
 
