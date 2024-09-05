@@ -46,25 +46,7 @@ public class BlueSideTestAuto extends LinearOpMode {
         // all future movements will be thrown off. 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(11.8, 61.7, Math.toRadians(270)));
 
-        Action trajectoryAction1;
-        Action trajectoryAction2;
-        Action trajectoryAction3;
-        Action trajectoryActionCloseOut;
-
-        trajectoryAction1 = drive.actionBuilder(drive.pose)
-                .lineToYSplineHeading(33, Math.toRadians(0))
-                .waitSeconds(2)
-                .setTangent(Math.toRadians(90))
-                .lineToY(48)
-                .setTangent(Math.toRadians(0))
-                .lineToX(32)
-                .strafeTo(new Vector2d(44.5, 30))
-                .turn(Math.toRadians(180))
-                .lineToX(47.5)
-                .waitSeconds(3)
-                .build();
-
-        trajectoryAction2 = drive.actionBuilder(drive.pose)
+        Action trajectoryAction1 = drive.actionBuilder(drive.pose)
                 .lineToY(35)
                 .setTangent(Math.toRadians(0))
                 .lineToX(16)
@@ -72,17 +54,6 @@ public class BlueSideTestAuto extends LinearOpMode {
                 .setTangent(Math.toRadians(0))
                 .lineToXSplineHeading(46, Math.toRadians(0))
                 .waitSeconds(3)
-                .build();
-
-        trajectoryAction3 = drive.actionBuilder(drive.pose)
-                .lineToYSplineHeading(33, Math.toRadians(180))
-                .waitSeconds(2)
-                .strafeTo(new Vector2d(46, 30))
-                .waitSeconds(3)
-                .build();
-
-       trajectoryActionCloseOut = drive.actionBuilder(drive.pose)
-                .strafeTo(new Vector2d(48, 12))
                 .build();
 
        //##PY Commented out for the basic Notre Dame robot without a camera.
@@ -93,33 +64,10 @@ public class BlueSideTestAuto extends LinearOpMode {
 
         waitForStart();
 
-        // Assume that the following AprilTag id number comes from the vision system.
-        AprilTagUtils.AprilTagId targetTagId = AprilTagUtils.AprilTagId.TAG_ID_2;
-        Action trajectoryActionChosen;
-        switch (targetTagId) {
-            case TAG_ID_1: {
-                trajectoryActionChosen = trajectoryAction1;
-                break;
-            }
-            case TAG_ID_2: {
-                trajectoryActionChosen = trajectoryAction2;
-                break;
-            }
-            case TAG_ID_3: {
-                trajectoryActionChosen = trajectoryAction3;
-                break;
-            }
-            default: {
-                telemetry.addData("Invalid blue backdrop AprilTag target", targetTagId);
-                telemetry.update();
-                return;
-            }
-        }
-
         //##PY This SequentialAction works. It detects an AprilTag at the end of the run.
        // Actions.runBlocking(
        //         new SequentialAction(
-       //                 trajectoryActionChosen,
+       //                 trajectoryAction1,
        //                 new BackdropAprilTagDetection(targetTagId) //, // Action for AprilTag detection
                         //**TODO stop at backdrop for now trajectoryActionCloseOut
        //         )
@@ -127,7 +75,7 @@ public class BlueSideTestAuto extends LinearOpMode {
 
         //##PY The next two lines also work; comment out Actions.runBlocking above.
         //##PY But for the ND robot without a camera just use the next line.
-        Actions.runBlocking(trajectoryActionChosen);
+        Actions.runBlocking(trajectoryAction1);
         //Actions.runBlocking(detection);
     }
 

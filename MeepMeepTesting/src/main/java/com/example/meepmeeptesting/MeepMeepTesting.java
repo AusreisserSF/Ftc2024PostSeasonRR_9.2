@@ -14,7 +14,7 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        // trajectoryAction2 from BlueSideTestAuto.
+        // trajectoryAction1 from BlueSideTestAuto.
                 myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(11.8, 61.7, Math.toRadians(270)))
                 .lineToY(35)
                 .setTangent(Math.toRadians(0))
@@ -24,19 +24,6 @@ public class MeepMeepTesting {
                 .lineToXSplineHeading(46, Math.toRadians(0))
                 .waitSeconds(3)
                 .build());
-
-        /*
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, 0, 0))
-                .lineToX(30)
-                .turn(Math.toRadians(90))
-                .lineToY(30)
-                .turn(Math.toRadians(90))
-                .lineToX(0)
-                .turn(Math.toRadians(90))
-                .lineToY(0)
-                .turn(Math.toRadians(90))
-                .build());
-         */
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_OFFICIAL)
                 .setDarkMode(true)
