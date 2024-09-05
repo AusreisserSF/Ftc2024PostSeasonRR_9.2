@@ -63,14 +63,15 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.UP; //## PY set to UP
 
         // drive model parameters
-        public double inPerTick = 0.00294; //##PY from ForwardPushTest
+        public double inPerTick = 0.002943; //##PY from ForwardPushTest
 
-        public double lateralInPerTick = 0.0022059951805046283; // 0.002420631820640798; //##PY from LateralRampLogger
-        public double trackWidthTicks = 5002.8832088259705; // 4961.619979575391; //##PY from AngularRampLogger
+        public double lateralInPerTick = 0.0023218229961435143; //##PY from LateralRampLogger
+        public double trackWidthTicks = 4866.460518994749; //##PY from AngularRampLogger
 
         // feedforward parameters (in tick units)
-        public double kS = 0.6198063044511004; // 0.7419135663019945; //##PY from ForwardRampLogger
-        public double kV = 0.0005928353935888693; // 0.0005828189512420316; //##PY from ForwardRampLogger
+        // kV: 0.000598199576141701, kS: 1.2246688206464622
+        public double kS = 1.362384036443848; //##PY from ForwardRampLogger
+        public double kV = 0.0005904533025099864; //##PY from ForwardRampLogger
         public double kA = 0.0001; //##PY starting point per documentation 0.0000001
 
         // path profile parameters (in inches)
@@ -84,7 +85,7 @@ public final class MecanumDrive {
 
         // path controller gains
         public double axialGain = 1.0; //##PY set after running ManualFeedbackTuner
-        public double lateralGain = 5.0; //##PY set after running ManualFeedbackTuner
+        public double lateralGain = 10.0; // 5.0; //##PY set after running ManualFeedbackTuner
         public double headingGain = 10.0; //##PY set after running ManualFeedbackTuner
 
         public double axialVelGain = 0.0;
