@@ -13,7 +13,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -32,51 +31,83 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @Config
-@Autonomous(name = "RR_BLUE_TEST_AUTO", group = "Autonomous")
-public class BlueSideTestAuto extends LinearOpMode {
+@Autonomous(name = "RR_RED_TEST_AUTO", group = "Autonomous")
+public class RedSideTestAuto extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
 
     @Override
     public void runOpMode() {
-        //## From the documentation:
-        // Make sure your MecanumDrive is instantiated at the correct pose.
-        // If you end up using lineToX(), lineToY(), strafeTo(), splineTo(),
-        // or any of their variants in your code, if the initial pose is wrong,
-        // all future movements will be thrown off. 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(11.8, 61.7, Math.toRadians(270)));
 
-        Action trajectoryAction1 = drive.actionBuilder(drive.pose)
-                .lineToY(35)
-                .setTangent(Math.toRadians(0))
-                .lineToX(16)
-                .waitSeconds(2)
-                .setTangent(Math.toRadians(0))
-                .lineToXSplineHeading(46, Math.toRadians(0))
-                .waitSeconds(3)
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(14.76, -62.89, Math.toRadians(90)));
+
+        Action toSubmersible = drive.actionBuilder(drive.pose)
+                .splineToSplineHeading(new Pose2d(6.44, -35.0, Math.toRadians(90)), Math.toRadians(90))
                 .build();
 
-       //##PY Commented out for the basic Notre Dame robot without a camera.
-       //initAprilTag();
+        Action hangSpecimen = drive.actionBuilder(drive.pose)
+                .waitSeconds(2)
+                .build();
+
+        Action toSample1 = drive.actionBuilder(drive.pose)
+                .lineToY(-48)
+                .setTangent(Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(37.11, -37.11, Math.toRadians(45)), Math.toRadians(45))
+                .waitSeconds(2)
+                .build();
+
+        //##PY Commented out for the basic Notre Dame robot without a camera.
+        //initAprilTag();
 
         telemetry.addLine("Waiting for start at BLUE_A4 ...");
         telemetry.update();
 
         waitForStart();
 
-        //##PY This SequentialAction works. It detects an AprilTag at the end of the run.
-       // Actions.runBlocking(
-       //         new SequentialAction(
-       //                 trajectoryAction1,
-       //                 new BackdropAprilTagDetection(targetTagId) //, // Action for AprilTag detection
-                        //**TODO stop at backdrop for now trajectoryActionCloseOut
-       //         )
-       // );
+        Actions.runBlocking(
+                new SequentialAction(
+                        toSubmersible,
+                        hangSpecimen,
+                        new NestedAction(drive)
+                )
+        );
 
         //##PY The next two lines also work; comment out Actions.runBlocking above.
         //##PY But for the ND robot without a camera just use the next line.
-        Actions.runBlocking(trajectoryAction1);
+        //Actions.runBlocking(trajectoryAction1);
         //Actions.runBlocking(detection);
+    }
+
+    private class NestedAction implements Action {
+        MecanumDrive drive;
+        private Action action;
+
+        public NestedAction(MecanumDrive pDrive) {
+            drive = pDrive;
+        }
+
+        private boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                initialized = true;
+
+                RobotLog.dd("NestedAction", "Starting pose " + drive.pose);
+                action = drive.actionBuilder(drive.pose)
+                        .lineToY(-48)
+                        .waitSeconds(2)
+                        .build();
+            }
+
+            if (!action.run(packet)) {
+                RobotLog.dd("NestedAction", "Ending pose " + drive.pose);
+                return false; // keep going
+            }
+
+            return true; // done
+        }
+
     }
 
     private void initAprilTag() {
