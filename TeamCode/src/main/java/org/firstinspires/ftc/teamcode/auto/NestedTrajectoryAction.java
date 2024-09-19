@@ -4,14 +4,18 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
-//**TODO Need a full explanation
-// of why it's necessary - to get the ending pose from the previous
-// trajectory after that trajectory has completed. The pose is
-// stored in the MecanumDrive class.
+import java.util.function.Function;
+
+// This class is necessary when we need to get the ending pose from the
+// previous trajectory after that trajectory has completed. That pose,
+// which is stored in the MecanumDrive class, is only available at the
+// time the run method below is invoked.
 public class NestedTrajectoryAction implements Action {
 
     private final MecanumDrive drive;
@@ -30,7 +34,16 @@ public class NestedTrajectoryAction implements Action {
         if (!initialized) {
             initialized = true;
 
+            //## A more generic - but maybe too generic - way of capturing a
+            // reference to the actionBuilder method in MecanumDrive.
+            // Function<Pose2d, TrajectoryActionBuilder> tab = drive::actionBuilder;
+
             RobotLog.dd("NestedAction", "Starting pose " + drive.pose);
+
+            // We need a reference to MecanumDrive to access to the method
+            // actionBuilder. We also extract the pose from the same instance -
+            // needed for compatibility with other callers that may supply a
+            // hard-coded pose to buildTrajectoryAction.
             TrajectoryActionCollection.buildTrajectoryAction(drive, drive.pose, trajectoryActionId);
         }
 

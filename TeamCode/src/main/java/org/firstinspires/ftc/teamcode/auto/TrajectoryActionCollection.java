@@ -2,8 +2,11 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+
+import java.util.function.Function;
 
 public class TrajectoryActionCollection {
 
@@ -11,7 +14,20 @@ public class TrajectoryActionCollection {
 
     public enum TrajectoryActionId {RED_F4_TO_SUBMERSIBLE, RED_F4_TO_SAMPLE_1 }
 
-    //**TODO Comment: even though the pose is a public field in MecanumDrive
+    //## An example of how to use a Functional interface to get a reference to
+    // the actionBuilder method in MecanumDrive.
+    /*
+    public static Action buildTrajectoryAction(Function<Pose2d, TrajectoryActionBuilder> pTrajectoryActionBuilder,
+                                 Pose2d pPose,
+                                 TrajectoryActionId pTrajectoryActionId) {
+        // hard-coded example.
+        return pTrajectoryActionBuilder.apply(pPose)
+                .splineToSplineHeading(new Pose2d(6.44, -35.0, Math.toRadians(90)), Math.toRadians(90))
+                .build();
+    }
+     */
+
+    // Even though the pose is a public field in MecanumDrive the caller
     // the caller may choose to use a hard-coded pose.
     public static Action buildTrajectoryAction(MecanumDrive pDrive, Pose2d pPose,
                                                TrajectoryActionId pTrajectoryActionId) {
