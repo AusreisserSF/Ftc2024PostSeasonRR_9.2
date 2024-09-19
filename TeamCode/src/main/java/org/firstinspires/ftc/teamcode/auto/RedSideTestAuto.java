@@ -41,14 +41,17 @@ public class RedSideTestAuto extends LinearOpMode {
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(14.76, -62.89, Math.toRadians(90)));
 
-        Action toSubmersible = drive.actionBuilder(drive.pose)
-                .splineToSplineHeading(new Pose2d(6.44, -35.0, Math.toRadians(90)), Math.toRadians(90))
-                .build();
+        // This is the first trajectory Action after the creation of the instance
+        // of MecanumDrive so the use of drive.pose is ok here.
+        Action toSubmersible = TrajectoryActionCollection.buildTrajectoryAction(drive, drive.pose, TrajectoryActionCollection.TrajectoryActionId.RED_F4_TO_SUBMERSIBLE);
 
+        // The field drive.pose is not actually used here.
         Action hangSpecimen = drive.actionBuilder(drive.pose)
                 .waitSeconds(2)
                 .build();
 
+        // This Action depends on the ending pose of toSubmersible, not drive.pose.
+        // See the use of NestedTrajectoryAction below.
         Action toSample1 = drive.actionBuilder(drive.pose)
                 .lineToY(-48)
                 .setTangent(Math.toRadians(0))
@@ -59,7 +62,7 @@ public class RedSideTestAuto extends LinearOpMode {
         //##PY Commented out for the basic Notre Dame robot without a camera.
         //initAprilTag();
 
-        telemetry.addLine("Waiting for start at RED_F3 ...");
+        telemetry.addLine("Waiting for start at RED_F4 ...");
         telemetry.update();
 
         waitForStart();
@@ -73,9 +76,9 @@ public class RedSideTestAuto extends LinearOpMode {
         // robot need to be nested.
         Actions.runBlocking(
                 new SequentialAction(
-                        toSubmersible,
+                        TrajectoryActionCollection.buildTrajectoryAction(drive, drive.pose, TrajectoryActionCollection.TrajectoryActionId.RED_F4_TO_SUBMERSIBLE),
                         hangSpecimen,
-                        new NestedAction(drive, TrajectoryActionCollection.TrajectoryActionId.F4_RED_TO_SAMPLE_1)
+                        new NestedTrajectoryAction(drive, TrajectoryActionCollection.TrajectoryActionId.RED_F4_TO_SAMPLE_1)
                 )
         );
     }
