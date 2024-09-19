@@ -44,7 +44,7 @@ public class NestedTrajectoryAction implements Action {
             // actionBuilder. We also extract the pose from the same instance -
             // needed for compatibility with other callers that may supply a
             // hard-coded pose to buildTrajectoryAction.
-            TrajectoryActionCollection.buildTrajectoryAction(drive, drive.pose, trajectoryActionId);
+            action = TrajectoryActionCollection.buildTrajectoryAction(drive, drive.pose, trajectoryActionId);
         }
 
         if (!action.run(packet)) {
