@@ -59,55 +59,25 @@ public class RedSideTestAuto extends LinearOpMode {
         //##PY Commented out for the basic Notre Dame robot without a camera.
         //initAprilTag();
 
-        telemetry.addLine("Waiting for start at BLUE_A4 ...");
+        telemetry.addLine("Waiting for start at RED_F3 ...");
         telemetry.update();
 
         waitForStart();
 
+        //!! Note that the first Action ina SequjentialAction does not
+        // need to be nested because drive.pose at this point is set
+        // be the constructor of MecanumDrive. Note also that any Action
+        // that does not rely on drive.pose - such as hangSpeciment -
+        // does not need to be nested. But after the first Action that
+        // moves the robot *all* subsequent Actions that also move the
+        // robot need to be nested.
         Actions.runBlocking(
                 new SequentialAction(
                         toSubmersible,
                         hangSpecimen,
-                        new NestedAction(drive)
+                        new NestedAction(drive, TrajectoryActionCollection.TrajectoryActionId.F4_RED_TO_SAMPLE_1)
                 )
         );
-
-        //##PY The next two lines also work; comment out Actions.runBlocking above.
-        //##PY But for the ND robot without a camera just use the next line.
-        //Actions.runBlocking(trajectoryAction1);
-        //Actions.runBlocking(detection);
-    }
-
-    private class NestedAction implements Action {
-        MecanumDrive drive;
-        private Action action;
-
-        public NestedAction(MecanumDrive pDrive) {
-            drive = pDrive;
-        }
-
-        private boolean initialized = false;
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                initialized = true;
-
-                RobotLog.dd("NestedAction", "Starting pose " + drive.pose);
-                action = drive.actionBuilder(drive.pose)
-                        .lineToY(-48)
-                        .waitSeconds(2)
-                        .build();
-            }
-
-            if (!action.run(packet)) {
-                RobotLog.dd("NestedAction", "Ending pose " + drive.pose);
-                return false; // keep going
-            }
-
-            return true; // done
-        }
-
     }
 
     private void initAprilTag() {
