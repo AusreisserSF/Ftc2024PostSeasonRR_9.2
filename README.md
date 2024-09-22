@@ -1,4 +1,4 @@
-# Road Runner Quickstart
+9/21/2024 This is the final commit for this release.
 
-Check out the [docs](https://rr.brott.dev/docs/v1-0/tuning/).
+Active development now takes place in FtcIntoTheDeep.
 
